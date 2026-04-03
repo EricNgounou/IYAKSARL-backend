@@ -1,0 +1,11 @@
+
+chanel: 
+Dipesh Malvia
+
+Learn Node.js & Express with Project in 2 Hours
+
+
+mongodb+srv://ngounoueric44:admin@app-js-fullstack.tkn0vxz.mongodb.net/IYAKSARL-product-backend
+
+// Git commands
+- Update current commit without creating a new one >>> 'git commit --amend --no-edit' and force to update remote with the command >>> 'git push --force-with-lease origin main'
