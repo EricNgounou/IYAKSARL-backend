@@ -10,8 +10,11 @@ const validateToken = require("../middleware/validateTokenHandler");
 
 const router = express.Router();
 
-router.use(validateToken);
-router.route("/").get(getOrders).post(createOrder);
-router.route("/:id").put(updateOrder).get(getOrder).delete(deleteOrder);
+router.route("/").get(validateToken, getOrders).post(createOrder);
+router
+  .route("/:id")
+  .put(validateToken, updateOrder)
+  .get(validateToken, getOrder)
+  .delete(validateToken, deleteOrder);
 
 module.exports = router;

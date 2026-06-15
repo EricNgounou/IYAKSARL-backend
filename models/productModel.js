@@ -4,31 +4,46 @@ const productSchema = mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, "Please add the product name"],
+      required: true,
     },
-    price: { type: String, required: [true, "Please add the product price"] },
     category: {
       type: String,
-      required: [true, "Please add the product category"],
+      required: true,
     },
-    sub_category: {
+    subcategory: {
       type: String,
       default: null,
     },
-    img_url: {
-      type: String,
-      required: [true, "Please add the product image"],
-    },
-    stock: {
+    price: { type: Number, required: true },
+    instock: {
       type: Number,
-      require: [true, "please add the product stock"],
+      require: true,
     },
+    imgurls: [
+      {
+        thumbnailUrlWEBP: String,
+        thumbnailUrlJPEG: String,
+        thumbnailUrlAVIF: String,
+        mainUrlWEBP: String,
+        mainUrlJPEG: String,
+        mainUrlAVIF: String,
+        altText: String,
+        isDefault: Boolean,
+        isUploaded: Boolean,
+      },
+    ],
+    description: [
+      {
+        type: Object,
+        require: [true, "At least one description"],
+      },
+    ],
     sales: {
       type: Number,
-      require: [true, "please add the number of sales"],
+      default: 0,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-module.exports = mongoose.model("product", productSchema);
+module.exports = mongoose.model("Product", productSchema);
