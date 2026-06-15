@@ -1,40 +1,85 @@
 const asyncHandler = require("express-async-handler");
 const Order = require("../models/orderModel");
+const OrderItem = require("../models/orderItemModel");
+const Product = require("../models/productModel");
 
 //@desc Get all orders
 //@route GET /api/orders
 //@access private (user / admin)
 const getOrders = asyncHandler(async (req, res) => {
-  let order;
-  if (req.user.role === "admin" && req.body.option === "all")
-    order = await Order.find();
-  else order = await Order.find({ user_id: req.user.id });
-  res.status(200).json(order);
+  if (!req.user.isadmin) {
+    res.status(401);
+    throw new Error("User is not authorized");
+  }
+
+  const orders = await Order.find();
+
+  if (!orders) {
+    res.status(404);
+    throw new Error("Orders not found");
+  }
+  res.status(200).json(orders);
 });
 
 //@desc Create order
 //@route POST /api/orders
-//@access private
+//@access public
 const createOrder = asyncHandler(async (req, res) => {
-  const { total_price, status, items } = req.body;
-  if (!total_price || !status || !items) {
+  const { order, items } = req.body;
+  if (!order || !items) {
     res.status(400);
-    throw new Error("All fields are mandatory");
+    throw new Error("Missing data");
   }
-  const order = await Order.create({
-    total_price,
-    status,
-    items,
-    user_id: req.user.id,
-  });
-  res.status(201).json(order);
+  const createdOrder = await Order.create(order);
+  if (createdOrder) {
+    const itemsUploadInitTasks = items.map(async (item) => {
+      const updatedProduct = await Product.findOneAndUpdate(
+        {
+          _id: item.product_id,
+          instock: { $gte: item.quantity }, // Condition: stock must be >= quantity
+        },
+        {
+          $inc: {
+            sales: item.quantity,
+            instock: -item.quantity,
+          },
+        },
+        { new: true },
+      );
+
+      if (!updatedProduct) {
+        await Order.findByIdAndDelete(createdOrder._id);
+        res.status(404);
+        throw new Error(
+          "Product not found or insufficient stock for product ID: " +
+            item.product_id,
+        );
+      }
+
+      item.order_id = createdOrder._id;
+    });
+
+    await Promise.all(itemsUploadInitTasks);
+    const createItems = await OrderItem.create(items);
+    if (createItems) {
+      res
+        .status(201)
+        .json({ _id: createdOrder._id, message: "Order successfully created" });
+    } else {
+      res.status(400);
+      throw new Error("Invalid data");
+    }
+  } else {
+    res.status(400);
+    throw new Error("Invalid data");
+  }
 });
 
 //@desc Update order
 //@route PUT /api/orders/:id
 //@access private (admin only)
 const updateOrder = asyncHandler(async (req, res) => {
-  if (req.user.role !== "admin") {
+  if (!req.user.isadmin) {
     res.status(401);
     throw new Error("User is not authorized");
   }

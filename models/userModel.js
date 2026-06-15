@@ -15,12 +15,12 @@ const userSchema = mongoose.Schema(
       type: String,
       required: [true, "Please add the user password"],
     },
-    role: {
-      type: String,
-      default: "user",
+    isadmin: {
+      type: Boolean,
+      default: false,
     },
   },
-  { timestamp: true }
+  { timestamps: true },
 );
 
-module.exports = mongoose.model("user", userSchema);
+module.exports = mongoose.model("User", userSchema);

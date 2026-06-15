@@ -3,21 +3,25 @@ const {
   registerUser,
   loginUser,
   currentUser,
-  sendOtp,
-  verifyOtp,
+  logoutUser,
+  updateUser,
+  validateUpdates,
 } = require("../controllers/userController");
 const validateToken = require("../middleware/validateTokenHandler");
+const { validateOtp } = require("../controllers/otpController");
 
 const router = express.Router();
 
-router.post("/send-otp", sendOtp);
+router.post("/register", validateOtp, registerUser);
 
-router.post("/verify-otp", verifyOtp);
+router.post("/login", validateOtp, loginUser);
 
-router.post("/register", registerUser);
-
-router.post("/login", loginUser);
+router.post("/logout", logoutUser);
 
 router.get("/current", validateToken, currentUser);
+
+router.put("/update", validateToken, updateUser, loginUser);
+
+router.post("/validate-updates", validateToken, validateUpdates);
 
 module.exports = router;
